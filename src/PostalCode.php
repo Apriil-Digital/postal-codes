@@ -17,6 +17,17 @@ class PostalCode extends Model
         'id' => 'string',
     ];
 
+    /**
+     * Get the postal code
+     *
+     * @param  string  $value
+     * @return string
+     */
+    public function getIdAttribute($value)
+    {
+        return str_pad($value, 4, '0', STR_PAD_LEFT);
+    }
+
     protected array $rows = [
         ['id' => '0001', 'name' => 'Oslo'],
         ['id' => '0010', 'name' => 'Oslo'],
