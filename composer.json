@@ -1,0 +1,23 @@
+{
+    "name": "apriil/postal-codes",
+    "description": "Eloquent model for Norwegian postal codes",
+    "type": "library",
+    "license": "MIT",
+    "homepage": "https://github.com/apriil-digital/postal-codes",
+    "authors": [
+        {
+            "name": "Apriil Digital",
+            "email": "thomas.alrek@apriil.no"
+        }
+    ],
+    "require": {
+        "php": ">=7.4",
+        "calebporzio/sushi": "^2.5",
+        "illuminate/database": ">=6.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "Apriil\\PostalCodes\\": "src/"
+        }
+    }
+}
