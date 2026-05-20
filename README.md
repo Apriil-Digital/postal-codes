@@ -22,7 +22,7 @@ The dataset lives in memory via [Sushi](https://github.com/calebporzio/sushi)—
 Install via Composer:
 
 ```bash
-composer require apriil/norwegian-postal-codes
+composer require apriil/postal-codes
 ```
 
 ## Usage
