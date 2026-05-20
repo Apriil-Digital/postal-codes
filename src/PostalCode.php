@@ -10,6 +10,8 @@ class PostalCode extends Model
     use Sushi;
 
     public $timestamps = false;
+    public $incrementing = false;
+    protected $keyType = 'string';
 
     protected array $rows = [
         ['id' => '0001', 'name' => 'Oslo'],
