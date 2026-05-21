@@ -1,6 +1,6 @@
 # Norwegian Postal Codes
 
-An Eloquent model with every Norwegian postal code (`postnummer`) and place name (`poststed`), ready to query in Laravel or any PHP app that uses Illuminate Database.
+An Eloquent model with every Norwegian postal code (`postnummer`), place name (`poststed`), and delivery category, ready to query in Laravel or any PHP app that uses Illuminate Database.
 
 The dataset lives in memory via [Sushi](https://github.com/calebporzio/sushi)—no migrations, seeders, or external API calls. Install the package and query postal codes like any other Eloquent model.
 
@@ -10,12 +10,13 @@ The dataset lives in memory via [Sushi](https://github.com/calebporzio/sushi)—
 - **Standard Eloquent API** — `find`, `where`, `exists`, relationships, and the rest
 - **Zero database setup** — Sushi builds a temporary SQLite table from the embedded data
 - **Leading zeros preserved** — postal codes are stored as four-character strings (e.g. `0001`, `7030`)
+- **Delivery categories** — each code is tagged as street address, PO box, both, or service point via a typed `Category` enum
 
 ## Prerequisites
 
-- **PHP** 7.4 or newer
+- **PHP** 8.1 or newer
 - **PDO SQLite** extension (`pdo_sqlite`) — required by Sushi
-- **Laravel** 6.0 or newer
+- **Laravel** 8.69 or newer
 
 ## Installation
 
@@ -34,11 +35,42 @@ Import the model and use familiar Eloquent methods.
 ```php
 use Apriil\PostalCodes\PostalCode;
 
-$postal = PostalCode::find('0150');
+$postal = PostalCode::find('0001');
 
-$postal->id;   // "0150"
-$postal->name; // "Oslo"
+$postal->id;       // "0001"
+$postal->name;     // "Oslo"
+$postal->category; // Category::Mailbox
 ```
+
+### Filter by category
+
+Each postal code has a `category` that describes what kind of delivery it supports. The value is cast to the `Category` backed enum:
+
+```php
+use Apriil\PostalCodes\Enums\Category;
+use Apriil\PostalCodes\PostalCode;
+
+// Street-address codes only
+$streetCodes = PostalCode::where('category', Category::Address)->get();
+
+// PO box codes in Oslo
+$osloPostboxes = PostalCode::where('name', 'Oslo')
+    ->where('category', Category::Mailbox)
+    ->get();
+
+// Compare on the model
+$postal = PostalCode::find('0050');
+$postal->category === Category::Address; // true
+```
+
+| Enum case | Stored value | Meaning |
+|-----------|--------------|---------|
+| `Category::Address` | `G` | Street address delivery only |
+| `Category::Mailbox` | `P` | PO box (`postboks`) delivery only |
+| `Category::Both` | `B` | Both street address and PO box |
+| `Category::ServicePoint` | `S` | Service point / pickup location |
+
+Most codes are street-address (`G`) or PO box (`P`). `Both` and `ServicePoint` are less common but matter when you need to restrict which codes users can enter (for example, only `G` for home delivery forms).
 
 ### Validate that a postal code exists
 
@@ -75,7 +107,7 @@ $request->validate([
 $postalCodes = PostalCode::query()
     ->orderBy('name')
     ->orderBy('id')
-    ->get(['id', 'name']);
+    ->get(['id', 'name', 'category']);
 ```
 
 ### Relationships
@@ -96,10 +128,11 @@ class User extends Model
 
 ## Model reference
 
-| Column | Type   | Description                                      |
-|--------|--------|--------------------------------------------------|
-| `id`   | string | Four-digit Norwegian postal code (primary key) |
-| `name` | string | Place name (`poststed`)                          |
+| Column     | Type       | Description                                      |
+|------------|------------|--------------------------------------------------|
+| `id`       | string     | Four-digit Norwegian postal code (primary key) |
+| `name`     | string     | Place name (`poststed`)                          |
+| `category` | `Category` | Delivery type (`G`, `P`, `B`, or `S`) — see above |
 
 The model does not use timestamps (`created_at` / `updated_at`).
 
